@@ -300,9 +300,10 @@ const videoFolders = {
                 const video = document.createElement('video');
                 video.src = file;
                 video.controls = true;
-                // video.autoplay = false; //changing the autoplay
+                video.autoplay = true; 
+                video.playsInline = true;
                 video.muted = true;
-                video.loop = false;
+                video.loop = true;
 
                 video.addEventListener('loadedmetadata', () => {
                     if (video.videoWidth > video.videoHeight) {

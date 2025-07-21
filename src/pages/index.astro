@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
 
-  <video id="randomVideo" autoplay loop controls muted></video>
+  <video id="randomVideo" autoplay controls muted></video>
   <button id="closeBtn">❌</button>
   <button id="randomBtn">🔁</button>
   <button id="logout" onclick="localStorage.removeItem('unlocked'); location.href='/'">🚫</button>
@@ -253,24 +253,49 @@ import Layout from '../layouts/Layout.astro';
     }
 
     // ---- Play Random Video from Current List ----
+    // function playRandom(goFullscreen = false) {
+    //   if (!currentVideos || currentVideos.length === 0) {
+    //     document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
+    //     return;
+    //   }
+
+    //   const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
+    //   video.src = randomSrc;
+
+    //   video.addEventListener('canplay', () => {
+    //     if (goFullscreen) {
+    //       const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
+    //       if (fs) fs.call(video);
+    //     }
+    //   }, { once: true });
+
+    //   video.play().catch(console.warn);
+    // }
+
     function playRandom(goFullscreen = false) {
-      if (!currentVideos || currentVideos.length === 0) {
-        document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
-        return;
-      }
+  if (!currentVideos || currentVideos.length === 0) {
+    document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
+    return;
+  }
 
-      const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
-      video.src = randomSrc;
+  const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
+  video.src = randomSrc;
 
-      video.addEventListener('canplay', () => {
-        if (goFullscreen) {
-          const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
-          if (fs) fs.call(video);
-        }
-      }, { once: true });
+  // Remove previous 'ended' event to prevent stacking multiple listeners
+  video.onended = null;
 
-      video.play().catch(console.warn);
+  // Auto play next video when this one ends
+  video.onended = () => playRandom(false);
+
+  video.addEventListener('canplay', () => {
+    if (goFullscreen) {
+      const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
+      if (fs) fs.call(video);
     }
+  }, { once: true });
+
+  video.play().catch(console.warn);
+}
 
     // ---- Button Event Listeners ----
     document.getElementById('randomBtn').addEventListener('click', () => playRandom(false));

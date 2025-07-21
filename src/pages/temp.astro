@@ -299,6 +299,13 @@ const videoFolders = {
             batch.forEach(file => {
                 const video = document.createElement('video');
                 video.src = file;
+
+                video.setAttribute('controls', true);
+                video.setAttribute('autoplay', true);
+                video.setAttribute('muted', true);
+                video.setAttribute('playsinline', true);
+                video.setAttribute('loop', true);
+
                 video.controls = true;
                 video.autoplay = true; 
                 video.playsInline = true;

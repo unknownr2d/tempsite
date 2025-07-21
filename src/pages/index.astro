@@ -5,7 +5,8 @@ import Layout from '../layouts/Layout.astro';
 <Layout>
 
   <video id="randomVideo" autoplay controls muted></video>
-  <button id="closeBtn">❌</button>
+  <!-- <button id="closeBtn">❌</button> -->
+  <button id="playWithSoundBtn">🔊</button>
   <button id="randomBtn">🔁</button>
   <button id="logout" onclick="localStorage.removeItem('unlocked'); location.href='/'">🚫</button>
 
@@ -14,14 +15,7 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <script is:inline>
-    // Redirect to /password if not unlocked
-    // if (localStorage.getItem("unlocked") !== "true") {
-    //   window.location.href = "/password";
-    // }
-
-    // const base = import.meta.env.BASE_URL;
-
-    // Define video folders relative to /public/videos/
+   
     const videoFolders = {
     cute_int: [
         'videos/cute_int/1740996463087.mp4',
@@ -206,9 +200,14 @@ import Layout from '../layouts/Layout.astro';
 };
 
 
+
+
     let allVideos = Object.values(videoFolders).flat();
     let currentCategory = null;
     let currentVideos = allVideos;
+
+    console.log('allVideos:', allVideos);
+console.log('currentVideos:', currentVideos);
 
     const video = document.getElementById('randomVideo');
     const filterPanel = document.getElementById('filterPanel');
@@ -252,25 +251,7 @@ import Layout from '../layouts/Layout.astro';
       });
     }
 
-    // ---- Play Random Video from Current List ----
-    // function playRandom(goFullscreen = false) {
-    //   if (!currentVideos || currentVideos.length === 0) {
-    //     document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
-    //     return;
-    //   }
-
-    //   const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
-    //   video.src = randomSrc;
-
-    //   video.addEventListener('canplay', () => {
-    //     if (goFullscreen) {
-    //       const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
-    //       if (fs) fs.call(video);
-    //     }
-    //   }, { once: true });
-
-    //   video.play().catch(console.warn);
-    // }
+  
 
     function playRandom(goFullscreen = false) {
   if (!currentVideos || currentVideos.length === 0) {
@@ -297,9 +278,28 @@ import Layout from '../layouts/Layout.astro';
   video.play().catch(console.warn);
 }
 
+// document.getElementById('playWithSoundBtn').addEventListener('click', () => {
+//   video.muted = false;
+//   playRandom(false);
+//   document.getElementById('playWithSoundBtn').style.display = 'none';
+// });
+
+const soundBtn = document.getElementById('playWithSoundBtn');
+
+soundBtn.addEventListener('click', () => {
+  if (video.muted) {
+    video.muted = false;
+    soundBtn.textContent = '🔊';  // show sound on icon
+    video.play().catch(console.warn);
+  } else {
+    video.muted = true;
+    soundBtn.textContent = '🔇';  // show muted icon
+  }
+});
+
     // ---- Button Event Listeners ----
     document.getElementById('randomBtn').addEventListener('click', () => playRandom(false));
-    document.getElementById('closeBtn').addEventListener('click', () => window.close());
+    // document.getElementById('closeBtn').addEventListener('click', () => window.close());
 
     // ---- Init ----
     createFilterButtons();
@@ -326,7 +326,7 @@ import Layout from '../layouts/Layout.astro';
     background: black;
   }
 
-  #randomBtn, #closeBtn, #logout {
+  #randomBtn, #playWithSoundBtn, #logout {
     position: fixed;
     right: 15px;
     background: #1e90ff;
@@ -340,10 +340,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   #randomBtn { bottom: 150px; }
-  #closeBtn { bottom: 100px; }
+  #playWithSoundBtn { bottom: 100px; }
   #logout    { bottom: 50px; }
 
-  #randomBtn:hover, #closeBtn:hover, #logout:hover {
+  #randomBtn:hover, #playWithSoundBtn:hover, #logout:hover {
     background-color: #0b6ed1;
   }
 

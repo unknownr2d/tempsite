@@ -8,25 +8,12 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
 	<!-- <Welcome /> -->
-	<h1>hiifsdfsfsfsffi</h1>
+	
 	<h1>My Shorts Gallery</h1>
 
     <button class="nav-button" onclick="goToOtherPageV()">❤️</button>
     <button class="nav-button2" onclick="goToOtherPageInt()">🌐</button>
-    <button class="nav-button3" onclick="openRandomVideo()">🎲</button>
-
-
-    <div id="filterPanel">
-        <h3>Filter Videos</h3>
-    </div>
-
-    <div class="video-container" id="videoContainer"></div>
-
-    
-</Layout>
-
-
-<style>
+    <button class="nav-button3" onclick="openRandomVideo()">🎲</button><style>
         body {
             background-color: #111;
             color: white;
@@ -104,17 +91,20 @@ import Layout from '../layouts/Layout.astro';
             transform: translateX(-50%);
         }
         #filterPanel {
+			display: flex;
+			flex-direction: column;
+			
             position: fixed;
             top: 0;
             left: 0;
-            width: 150px;
+            width: 400px;
             height: 100%;
             background-color: #222;
             padding: 20px 10px;
             box-sizing: border-box;
             overflow-y: auto;
             transition: transform 0.3s ease;
-            transform: translateX(-110px);
+            transform: translateX(-300px);
             z-index: 11000;
             border-top-right-radius: 12px;
             border-bottom-right-radius: 12px;
@@ -125,29 +115,45 @@ import Layout from '../layouts/Layout.astro';
         #filterPanel h3 {
             margin-top: 0;
             margin-bottom: 15px;
-            font-size: 18px;
+            font-size: 2em;
             text-align: center;
         }
-        #filterPanel button {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px 5px;
+		/* btn.classList.add('filter-btn'); */
+        #filterPanel .filter-btn {
+            width: 90%;
+			height: 20px;
+            margin-bottom: 100px;
+            padding: 10px;
             border: none;
             border-radius: 8px;
             background-color: #1e90ff;
             color: white;
-            font-size: 14px;
+            font-size: 2em;
             cursor: pointer;
             transition: background-color 0.3s ease;
+			z-index: 11000;
         }
-        #filterPanel button:hover, #filterPanel button.active {
+        #filterPanel .filter-btn:hover, #filterPanel .filter-btn.active {
             background-color: #0b6ed1;
         }
     </style>
 
 
+    <div id="filterPanel">
+        <h3>Filter Videos</h3>
+    </div>
 
-<script>
+    <div class="video-container" id="videoContainer"></div>
+
+    
+</Layout>
+
+
+
+
+
+
+<script is:inline>
         
 
 const videoFolders = {
@@ -358,11 +364,30 @@ const videoFolders = {
             localStorage.setItem('videoList', JSON.stringify(videos));
             window.open('random.html', '_blank');
         }
+	// 	function styleButton(button) {
+	// 		button.style.width = '90%';
+    // button.style.height = '40px';
+    // button.style.padding = '0 10px';
+    // button.style.lineHeight = '40px';
+    // button.style.fontSize = '1em';
+    // button.style.border = 'none';
+    // button.style.borderRadius = '8px';
+    // button.style.backgroundColor = '#1e90ff';
+    // button.style.color = 'white';
+    // button.style.cursor = 'pointer';
+    // button.style.transition = 'background-color 0.3s ease';
+    // button.style.marginBottom = '10px'; // optional spacing
+    // button.style.textAlign = 'center';
+    // button.style.overflow = 'hidden';
+    // button.style.whiteSpace = 'nowrap';
+    // button.style.textOverflow = 'ellipsis';
+	// 	}
 
         function createFilterButtons() {
             const allBtn = document.createElement('button');
             allBtn.textContent = 'All';
-            allBtn.classList.add('active');
+            allBtn.classList.add('active', 'filter-btn');
+			// styleButton(allBtn);
             allBtn.onclick = () => {
                 currentCategory = null;
                 updateFilterButtons();
@@ -373,6 +398,7 @@ const videoFolders = {
             for (const category in videoFolders) {
                 const btn = document.createElement('button');
                 btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+				btn.classList.add('filter-btn');
                 btn.onclick = () => {
                     currentCategory = category;
                     updateFilterButtons();

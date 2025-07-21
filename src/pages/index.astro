@@ -9,4 +9,266 @@ import Layout from '../layouts/Layout.astro';
 <Layout>
 	<!-- <Welcome /> -->
 	<h1>hiifsdfsfsfsffi</h1>
+	<h1>My Shorts Gallery</h1>
+
+    <button class="nav-button" onclick="goToOtherPageV()">❤️</button>
+    <button class="nav-button2" onclick="goToOtherPageInt()">🌐</button>
+    <button class="nav-button3" onclick="openRandomVideo()">🎲</button>
+
+
+    <div id="filterPanel">
+        <h3>Filter Videos</h3>
+    </div>
+
+    <div class="video-container" id="videoContainer"></div>
+
+    
 </Layout>
+
+
+<style>
+        body {
+            background-color: #111;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            margin-left: 150px;
+        }
+        video {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        video:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+        video.vertical {
+            flex: 1 1 calc(45% - 20px);
+            max-width: 350px;
+            aspect-ratio: 9 / 16;
+        }
+        video.horizontal {
+            flex: 1 1 70%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+        }
+        .nav-button, .nav-button2, .nav-button3 {
+            position: fixed;
+            bottom: 20px;
+            font-size: 30px;
+            border: none;
+            border-radius: 100%;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 144, 255, 0.6);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .nav-button:hover, .nav-button2:hover, .nav-button3:hover {
+            background-color: #0b6ed1;
+            box-shadow: 0 6px 20px rgba(11, 110, 209, 0.8);
+        }
+        .nav-button {
+            left: 93.5%;
+            transform: translateX(-50%);
+        }
+        .nav-button2 {
+            left: 97%;
+            transform: translateX(-50%);
+        }
+        .nav-button3 {
+            left: 90%;
+            transform: translateX(-50%);
+        }
+        #filterPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 100%;
+            background-color: #222;
+            padding: 20px 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            transform: translateX(-110px);
+            z-index: 11000;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        #filterPanel:hover {
+            transform: translateX(0);
+        }
+        #filterPanel h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+        #filterPanel button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e90ff;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #filterPanel button:hover, #filterPanel button.active {
+            background-color: #0b6ed1;
+        }
+    </style>
+
+
+
+<script>
+        
+
+const videoFolders = {
+    
+    leak: [
+        'sl/leak/video03.mp4',
+        'sl/leak/VID_20241121_231022_278.mp4',
+        'sl/leak/VID_20241218_091117_991.mp4',
+        'sl/leak/YouCut_20241122_013317114.mp4',
+    ]
+};
+
+
+
+
+
+
+
+
+
+
+        const videoContainer = document.getElementById('videoContainer');
+        const filterPanel = document.getElementById('filterPanel');
+        let currentCategory = null;
+        let currentIndex = 0;
+        const batchSize = 6;
+        let currentVideos = [];
+
+        const allVideos = Object.values(videoFolders).flat();
+
+        function openRandomVideo() {
+            const videos = currentCategory ? videoFolders[currentCategory] : allVideos;
+            localStorage.setItem('videoList', JSON.stringify(videos));
+            window.open('random.html', '_blank');
+        }
+
+        function createFilterButtons() {
+            const allBtn = document.createElement('button');
+            allBtn.textContent = 'All';
+            allBtn.classList.add('active');
+            allBtn.onclick = () => {
+                currentCategory = null;
+                updateFilterButtons();
+                resetVideos();
+            };
+            filterPanel.appendChild(allBtn);
+
+            for (const category in videoFolders) {
+                const btn = document.createElement('button');
+                btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                btn.onclick = () => {
+                    currentCategory = category;
+                    updateFilterButtons();
+                    resetVideos();
+                };
+                filterPanel.appendChild(btn);
+            }
+        }
+
+        function updateFilterButtons() {
+            const buttons = filterPanel.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if ((currentCategory === null && btn.textContent === 'All') ||
+                    (btn.textContent.toLowerCase() === currentCategory)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function resetVideos() {
+            videoContainer.innerHTML = '';
+            currentIndex = 0;
+            if (currentCategory === null) {
+                currentVideos = allVideos;
+            } else {
+                currentVideos = videoFolders[currentCategory] || [];
+            }
+            loadNextBatch();
+        }
+
+        function loadNextBatch() {
+            if (currentIndex >= currentVideos.length) return;
+            const batch = currentVideos.slice(currentIndex, currentIndex + batchSize);
+            currentIndex += batchSize;
+
+            batch.forEach(file => {
+                const video = document.createElement('video');
+                video.src = file;
+                video.controls = true;
+                // video.autoplay = false; //changing the autoplay
+                video.muted = true;
+                video.loop = false;
+
+                video.addEventListener('loadedmetadata', () => {
+                    if (video.videoWidth > video.videoHeight) {
+                        video.classList.add('horizontal');
+                    } else {
+                        video.classList.add('vertical');
+                    }
+                    // video.play().catch(err => {
+                    //     console.log('Autoplay blocked:', err);
+                    // });
+                });
+
+                videoContainer.appendChild(video);
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                loadNextBatch();
+            }
+        });
+
+        function goToOtherPageV() {
+            window.location.href = 'bba.html';
+        }
+        function goToOtherPageInt() {
+            window.location.href = 'int.html';
+        }
+
+        createFilterButtons();
+        resetVideos();
+    </script>

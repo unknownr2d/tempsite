@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <div class="lock-screen">
+    <h2>🔒 Enter Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password..." />
+    <button id="submitBtn">Unlock</button>
+    <p id="errorMsg" class="error"></p>
+  </div>
+
+  <script is:inline>
+    const correctPassword = "notporn"; // Set your password here
+
+    document.getElementById("submitBtn").addEventListener("click", () => {
+      const entered = document.getElementById("passwordInput").value;
+      if (entered === correctPassword) {
+        localStorage.setItem("unlocked", "true");
+        window.location.href = "/index2"; // Change this to your real page
+      } else {
+        document.getElementById("errorMsg").textContent = "Incorrect password.";
+      }
+    });
+  </script>
+
+  <style>
+    .lock-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 100px;
+      color: white;
+    }
+    input {
+      padding: 10px;
+      font-size: 1.2em;
+      margin: 10px;
+      width: 250px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #1e90ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0b6ed1;
+    }
+    .error {
+      color: red;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+    body {
+      background-color: black;
+      font-family: sans-serif;
+    }
+  </style>
+</Layout>

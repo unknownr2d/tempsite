@@ -1,19 +1,38 @@
 ---
+import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
+	<!-- <Welcome /> -->
+	
+	<h1>My Shorts Gallery</h1>
 
-    <video id="randomVideo" autoplay loop controls muted></video>
-    <button id="closeBtn">❌</button>
-    <button id="randomBtn">🔁</button>
+    <button class="nav-button" onclick="goToOtherPageV()">❤️</button>
+    <button class="nav-button2" onclick="goToOtherPageInt()">🌐</button>
+    <button class="nav-button3" onclick="openRandomVideo()">🎲</button>
+    
+    
+
 
     <div id="filterPanel">
         <h3>Filter Videos</h3>
     </div>
 
-    <script is:inline>
+    <div class="video-container" id="videoContainer"></div>
+
+    
+</Layout>
+
+
+
+
+
+
+<script is:inline>
         
 
 const videoFolders = {
@@ -199,137 +218,204 @@ const videoFolders = {
     ],
 };
 
-let allVideos = Object.values(videoFolders).flat();
-let currentCategory = null;
-let currentVideos = allVideos;
 
-const video = document.getElementById('randomVideo');
-const filterPanel = document.getElementById('filterPanel');
 
-// ---- Create Filter Buttons ----
-function createFilterButtons() {
-  const allBtn = document.createElement('button');
-  allBtn.textContent = 'All';
-  allBtn.classList.add('active', 'filter-btn');
-  allBtn.onclick = () => {
-    currentCategory = null;
-    currentVideos = allVideos;
-    updateFilterButtons();
-    playRandom(false);
-  };
-  filterPanel.appendChild(allBtn);
 
-  for (const category in videoFolders) {
-    const btn = document.createElement('button');
-    btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-    btn.classList.add('filter-btn');
-    btn.onclick = () => {
-      currentCategory = category;
-      currentVideos = videoFolders[category];
-      updateFilterButtons();
-      playRandom(false);
-    };
-    filterPanel.appendChild(btn);
-  }
-}
 
-// ---- Highlight Active Button ----
-function updateFilterButtons() {
-  const buttons = filterPanel.querySelectorAll('button');
-  buttons.forEach(btn => {
-    btn.classList.remove('active');
-    if ((currentCategory === null && btn.textContent === 'All') ||
-        (btn.textContent.toLowerCase() === currentCategory)) {
-      btn.classList.add('active');
-    }
-  });
-}
 
-// ---- Play Random Video from Current List ----
-function playRandom(goFullscreen = false) {
-  if (!currentVideos || currentVideos.length === 0) {
-    document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
-    return;
-  }
 
-  const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
-  video.src = randomSrc;
 
-  video.addEventListener('canplay', () => {
-    if (goFullscreen) {
-      const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
-      if (fs) fs.call(video);
-    }
-  }, { once: true });
 
-  video.play().catch(console.warn);
-}
 
-document.getElementById('randomBtn').addEventListener('click', () => playRandom(false));
-document.getElementById('closeBtn').addEventListener('click', () => window.close());
 
-// ---- Initialize Buttons and First Video ----
-createFilterButtons();
-playRandom(true); // Play one random video on load
 
-</script>
+        const videoContainer = document.getElementById('videoContainer');
+        const filterPanel = document.getElementById('filterPanel');
+        let currentCategory = null;
+        let currentIndex = 0;
+        const batchSize = 6;
+        let currentVideos = [];
 
-</Layout>
+        const allVideos = Object.values(videoFolders).flat();
+
+        function openRandomVideo() {
+            const videos = currentCategory ? videoFolders[currentCategory] : allVideos;
+            localStorage.setItem('videoList', JSON.stringify(videos));
+            window.open('/random2', '_blank');
+        }
+	
+
+        function createFilterButtons() {
+            const allBtn = document.createElement('button');
+            allBtn.textContent = 'All';
+            allBtn.classList.add('active', 'filter-btn');
+            allBtn.onclick = () => {
+                currentCategory = null;
+                updateFilterButtons();
+                resetVideos();
+            };
+            filterPanel.appendChild(allBtn);
+
+            for (const category in videoFolders) {
+                const btn = document.createElement('button');
+                btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+				btn.classList.add('filter-btn');
+                btn.onclick = () => {
+                    currentCategory = category;
+                    updateFilterButtons();
+                    resetVideos();
+                };
+                filterPanel.appendChild(btn);
+            }
+        }
+
+        function updateFilterButtons() {
+            const buttons = filterPanel.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if ((currentCategory === null && btn.textContent === 'All') ||
+                    (btn.textContent.toLowerCase() === currentCategory)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function resetVideos() {
+            videoContainer.innerHTML = '';
+            currentIndex = 0;
+            if (currentCategory === null) {
+                currentVideos = allVideos;
+            } else {
+                currentVideos = videoFolders[currentCategory] || [];
+            }
+            loadNextBatch();
+        }
+
+        function loadNextBatch() {
+            if (currentIndex >= currentVideos.length) return;
+            const batch = currentVideos.slice(currentIndex, currentIndex + batchSize);
+            currentIndex += batchSize;
+
+            batch.forEach(file => {
+                const video = document.createElement('video');
+                video.src = file;
+                video.controls = true;
+                // video.autoplay = false; //changing the autoplay
+                video.muted = true;
+                video.loop = false;
+
+                video.addEventListener('loadedmetadata', () => {
+                    if (video.videoWidth > video.videoHeight) {
+                        video.classList.add('horizontal');
+                    } else {
+                        video.classList.add('vertical');
+                    }
+                    // video.play().catch(err => {
+                    //     console.log('Autoplay blocked:', err);
+                    // });
+                });
+
+                videoContainer.appendChild(video);
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                loadNextBatch();
+            }
+        });
+
+        function goToOtherPageV() {
+            window.location.href = 'bba.html';
+        }
+        function goToOtherPageInt() {
+            window.location.href = 'int.html';
+        }
+
+        createFilterButtons();
+        resetVideos();
+    </script>
+
+
 
 <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background-color: black;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-      background: black;
-    }
-
-    #randomBtn {
-      position: fixed;
-      bottom: 170px;
-      right: 15px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 25%;
-      padding: 8px 12px;
-      font-size: 30px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-
-    #closeBtn {
-      position: fixed;
-      bottom: 100px;
-      right: 15px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 25%;
-      padding: 8px 12px;
-      font-size: 30px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-
-    #randomBtn:hover {
-      background-color: #0b6ed1;
-    }
-    #closeBtn:hover {
-      background-color: #0b6ed1;
-    }
-
-    #filterPanel {
+        body {
+            background-color: #111;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            margin-left: 150px;
+			/* background-color: aliceblue; */
+        }
+        video {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        video:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+        video.vertical {
+            flex: 1 1 calc(45% - 20px);
+            max-width: 350px;
+            aspect-ratio: 9 / 16;
+        }
+        video.horizontal {
+            flex: 1 1 70%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+        }
+        .nav-button, .nav-button2, .nav-button3 {
+            position: fixed;
+            bottom: 20px;
+            font-size: 30px;
+            border: none;
+            border-radius: 100%;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 144, 255, 0.6);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .nav-button:hover, .nav-button2:hover, .nav-button3:hover {
+            background-color: #0b6ed1;
+            box-shadow: 0 6px 20px rgba(11, 110, 209, 0.8);
+        }
+        .nav-button {
+            left: 93.5%;
+            transform: translateX(-50%);
+        }
+        .nav-button2 {
+            left: 97%;
+            transform: translateX(-50%);
+        }
+        .nav-button3 {
+            left: 90%;
+            transform: translateX(-50%);
+        }
+        #filterPanel {
 			display: flex;
 			flex-direction: column;
 			
@@ -375,4 +461,4 @@ playRandom(true); // Play one random video on load
         #filterPanel .filter-btn:hover, #filterPanel .filter-btn.active {
             background-color: #0b6ed1;
         }
-  </style>
+    </style>

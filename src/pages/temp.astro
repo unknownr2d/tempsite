@@ -292,7 +292,6 @@ const videoFolders = {
         }
 
         function loadNextBatch() {
-            if (currentIndex >= currentVideos.length) return;
             const batch = currentVideos.slice(currentIndex, currentIndex + batchSize);
             currentIndex += batchSize;
 
@@ -300,35 +299,39 @@ const videoFolders = {
                 const video = document.createElement('video');
                 video.src = file;
 
+                // ✅ Set all attributes before appending
                 video.setAttribute('controls', '');
-                video.setAttribute('autoplay', '');
                 video.setAttribute('muted', '');
                 video.setAttribute('playsinline', '');
                 video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('loop', '');
 
-                video.controls = true;
-                video.autoplay = true; 
-                video.playsInline = true;
+                // ✅ Set JS properties (safeguard)
                 video.muted = true;
+                video.playsInline = true;
                 video.loop = true;
 
-                video.addEventListener('click', (e) => {
-                    e.preventDefault();
+                // ✅ Add to the DOM BEFORE trying to play
+                videoContainer.appendChild(video);
+
+                // ✅ Now start playback
+                video.autoplay = true; // optional, to reflect state
+                video.setAttribute('autoplay', '');
+                video.play().catch(err => {
+                    console.warn('Autoplay error:', err);
                 });
 
+                // ✅ Optional: prevent accidental tap-triggered fullscreen
+                video.addEventListener('click', e => e.preventDefault());
+
+                // Optional: adjust class based on orientation
                 video.addEventListener('loadedmetadata', () => {
                     if (video.videoWidth > video.videoHeight) {
                         video.classList.add('horizontal');
                     } else {
                         video.classList.add('vertical');
                     }
-                    // video.play().catch(err => {
-                    //     console.log('Autoplay blocked:', err);
-                    // });
                 });
-
-                videoContainer.appendChild(video);
             });
         }
 

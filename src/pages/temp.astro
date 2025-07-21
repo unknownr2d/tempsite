@@ -313,6 +313,10 @@ const videoFolders = {
                 video.muted = true;
                 video.loop = true;
 
+                video.addEventListener('click', (e) => {
+                    e.preventDefault();
+                });
+
                 video.addEventListener('loadedmetadata', () => {
                     if (video.videoWidth > video.videoHeight) {
                         video.classList.add('horizontal');

@@ -1,27 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
 ---
 
 <Layout>
 
-    <video id="randomVideo" autoplay loop controls muted></video>
-    <button id="closeBtn">❌</button>
-    <button id="randomBtn">🔁</button>
-    <button id="logout" onclick="localStorage.removeItem('unlocked'); location.href='/';">🚫</button>
+  <video id="randomVideo" autoplay loop controls muted></video>
+  <button id="closeBtn">❌</button>
+  <button id="randomBtn">🔁</button>
+  <button id="logout" onclick="localStorage.removeItem('unlocked'); location.href='/'">🚫</button>
 
-    <div id="filterPanel">
-        <h3>Filter Videos</h3>
-    </div>
+  <div id="filterPanel">
+    <h3>Filter Videos</h3>
+  </div>
 
-    <script is:inline>
-
-      if (localStorage.getItem("unlocked") !== "true") {
+  <script is:inline>
+    // Redirect to /password if not unlocked
+    if (localStorage.getItem("unlocked") !== "true") {
       window.location.href = "/password";
     }
-        
 
-const videoFolders = {
+    const base = import.meta.env.BASE_URL;
+
+    // Define video folders relative to /public/videos/
+    const videoFolders = {
     cute_int: [
         'videos/cute_int/1740996463087.mp4',
         'videos/cute_int/1744362753007.mp4',
@@ -205,195 +206,169 @@ const videoFolders = {
 };
 
 
-let allVideos = Object.values(videoFolders).flat();
-let currentCategory = null;
-let currentVideos = allVideos;
+    let allVideos = Object.values(videoFolders).flat();
+    let currentCategory = null;
+    let currentVideos = allVideos;
 
-const video = document.getElementById('randomVideo');
-const filterPanel = document.getElementById('filterPanel');
+    const video = document.getElementById('randomVideo');
+    const filterPanel = document.getElementById('filterPanel');
 
-// ---- Create Filter Buttons ----
-function createFilterButtons() {
-  const allBtn = document.createElement('button');
-  allBtn.textContent = 'All';
-  allBtn.classList.add('active', 'filter-btn');
-  allBtn.onclick = () => {
-    currentCategory = null;
-    currentVideos = allVideos;
-    updateFilterButtons();
-    playRandom(false);
-  };
-  filterPanel.appendChild(allBtn);
+    // ---- Create Filter Buttons ----
+    function createFilterButtons() {
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'All';
+      allBtn.classList.add('active', 'filter-btn');
+      allBtn.onclick = () => {
+        currentCategory = null;
+        currentVideos = allVideos;
+        updateFilterButtons();
+        playRandom(false);
+      };
+      filterPanel.appendChild(allBtn);
 
-  for (const category in videoFolders) {
-    const btn = document.createElement('button');
-    btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-    btn.classList.add('filter-btn');
-    btn.onclick = () => {
-      currentCategory = category;
-      currentVideos = videoFolders[category];
-      updateFilterButtons();
-      playRandom(false);
-    };
-    filterPanel.appendChild(btn);
-  }
-}
-
-// ---- Highlight Active Button ----
-function updateFilterButtons() {
-  const buttons = filterPanel.querySelectorAll('button');
-  buttons.forEach(btn => {
-    btn.classList.remove('active');
-    if ((currentCategory === null && btn.textContent === 'All') ||
-        (btn.textContent.toLowerCase() === currentCategory)) {
-      btn.classList.add('active');
+      for (const category in videoFolders) {
+        const btn = document.createElement('button');
+        btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        btn.classList.add('filter-btn');
+        btn.onclick = () => {
+          currentCategory = category;
+          currentVideos = videoFolders[category];
+          updateFilterButtons();
+          playRandom(false);
+        };
+        filterPanel.appendChild(btn);
+      }
     }
-  });
-}
 
-// ---- Play Random Video from Current List ----
-function playRandom(goFullscreen = false) {
-  if (!currentVideos || currentVideos.length === 0) {
-    document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
-    return;
-  }
-
-  const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
-  video.src = randomSrc;
-
-  video.addEventListener('canplay', () => {
-    if (goFullscreen) {
-      const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
-      if (fs) fs.call(video);
+    // ---- Highlight Active Button ----
+    function updateFilterButtons() {
+      const buttons = filterPanel.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if ((currentCategory === null && btn.textContent === 'All') ||
+            (btn.textContent.toLowerCase() === currentCategory)) {
+          btn.classList.add('active');
+        }
+      });
     }
-  }, { once: true });
 
-  video.play().catch(console.warn);
-}
+    // ---- Play Random Video from Current List ----
+    function playRandom(goFullscreen = false) {
+      if (!currentVideos || currentVideos.length === 0) {
+        document.body.innerHTML = '<h2 style="color:white;">⚠️ No videos found.</h2>';
+        return;
+      }
 
-document.getElementById('randomBtn').addEventListener('click', () => playRandom(false));
-document.getElementById('closeBtn').addEventListener('click', () => window.close());
+      const randomSrc = currentVideos[Math.floor(Math.random() * currentVideos.length)];
+      video.src = randomSrc;
 
-// ---- Initialize Buttons and First Video ----
-createFilterButtons();
-playRandom(true); // Play one random video on load
+      video.addEventListener('canplay', () => {
+        if (goFullscreen) {
+          const fs = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
+          if (fs) fs.call(video);
+        }
+      }, { once: true });
 
-</script>
+      video.play().catch(console.warn);
+    }
+
+    // ---- Button Event Listeners ----
+    document.getElementById('randomBtn').addEventListener('click', () => playRandom(false));
+    document.getElementById('closeBtn').addEventListener('click', () => window.close());
+
+    // ---- Init ----
+    createFilterButtons();
+    playRandom(true);
+  </script>
 
 </Layout>
 
 <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background-color: black;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-      background: black;
-    }
+  video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    background: black;
+  }
 
-    #randomBtn {
-      position: fixed;
-      bottom: 150px;
-      right: 15px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 25%;
-      padding: 8px 12px;
-      font-size: 1em;
-      cursor: pointer;
-      z-index: 1000;
-    }
+  #randomBtn, #closeBtn, #logout {
+    position: fixed;
+    right: 15px;
+    background: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 25%;
+    padding: 8px 12px;
+    font-size: 1em;
+    cursor: pointer;
+    z-index: 1000;
+  }
 
-    #closeBtn {
-      position: fixed;
-      bottom: 100px;
-      right: 15px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 25%;
-      padding: 8px 12px;
-      font-size: 1em;
-      cursor: pointer;
-      z-index: 1000;
-    }
+  #randomBtn { bottom: 150px; }
+  #closeBtn { bottom: 100px; }
+  #logout    { bottom: 50px; }
 
-    #logout {
-      position: fixed;
-      bottom: 50px;
-      right: 15px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 25%;
-      padding: 8px 12px;
-      font-size: 1em;
-      cursor: pointer;
-      z-index: 1000;
-    }
+  #randomBtn:hover, #closeBtn:hover, #logout:hover {
+    background-color: #0b6ed1;
+  }
 
+  #filterPanel {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 100%;
+    background-color: #222;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    transform: translateX(-330px);
+    z-index: 11000;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+  }
 
-    #randomBtn:hover {
-      background-color: #0b6ed1;
-    }
-    #closeBtn:hover {
-      background-color: #0b6ed1;
-    }
+  #filterPanel:hover {
+    transform: translateX(0);
+  }
 
-    #filterPanel {
-			display: flex;
-			flex-direction: column;
-			
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 350px;
-            height: 100%;
-            background-color: #222;
-            padding: 20px 10px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            transform: translateX(-330px);
-            z-index: 11000;
-            border-top-right-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-        #filterPanel:hover {
-            transform: translateX(0);
-        }
-        #filterPanel h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 2em;
-            text-align: center;
-        }
-		/* btn.classList.add('filter-btn'); */
-        #filterPanel .filter-btn {
-            width: 50%;
-			height: 20px;
-            margin-bottom: 100px;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            background-color: #1e90ff;
-            color: white;
-            font-size: 2em;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-			z-index: 11000;
-        }
-        #filterPanel .filter-btn:hover, #filterPanel .filter-btn.active {
-            background-color: #0b6ed1;
-        }
-  </style>
+  #filterPanel h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 2em;
+    text-align: center;
+  }
+
+  #filterPanel .filter-btn {
+    width: 50%;
+    height: 20px;
+    margin-bottom: 100px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #1e90ff;
+    color: white;
+    font-size: 2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 11000;
+  }
+
+  #filterPanel .filter-btn:hover,
+  #filterPanel .filter-btn.active {
+    background-color: #0b6ed1;
+  }
+</style>

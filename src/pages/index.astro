@@ -6,6 +6,8 @@ import Layout from '../layouts/Layout.astro';
 
   <video id="randomVideo" autoplay controls muted></video>
   <!-- <button id="closeBtn">❌</button> -->
+  <button id="otherpage">🌐</button>
+
   <button id="playWithSoundBtn">🔊</button>
   <button id="randomBtn">🔁</button>
   <button id="logout" onclick="localStorage.removeItem('unlocked'); location.href='/'">🚫</button>
@@ -283,6 +285,9 @@ soundBtn.addEventListener('click', () => {
     // document.getElementById('closeBtn').addEventListener('click', () => window.close());
 
     // ---- Init ----
+    document.getElementById("otherpage").addEventListener("click", function() {
+    window.location.href = "https://tempintsite.netlify.app/";
+  });
     createFilterButtons();
     playRandom(true);
   </script>
@@ -307,7 +312,7 @@ soundBtn.addEventListener('click', () => {
     background: black;
   }
 
-  #randomBtn, #playWithSoundBtn, #logout {
+  #randomBtn, #playWithSoundBtn, #logout ,#otherpage{
     position: fixed;
     right: 15px;
     background: #1e90ff;
@@ -323,6 +328,9 @@ soundBtn.addEventListener('click', () => {
   #randomBtn { bottom: 150px; }
   #playWithSoundBtn { bottom: 100px; }
   #logout    { bottom: 50px; }
+  #otherpage{
+    bottom: 200px;
+  }
 
   #randomBtn:hover, #playWithSoundBtn:hover, #logout:hover {
     background-color: #0b6ed1;
